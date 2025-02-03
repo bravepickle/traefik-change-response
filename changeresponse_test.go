@@ -1,6 +1,7 @@
 package traefik_change_response_test
 
 import (
+	"bytes"
 	"context"
 	"net/http"
 	"net/http/httptest"
@@ -647,11 +648,49 @@ func TestCreateConfig(t *testing.T) {
 func TestNew(t *testing.T) {
 	ctx := context.Background()
 	next := http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {})
+	outBuf := bytes.NewBuffer([]byte{})
+	changeresponse.Notify = func(msg string) {
+		outBuf.WriteString(msg)
+	}
+
+	errBuf := bytes.NewBuffer([]byte{})
+	changeresponse.Alert = func(msg string) {
+		errBuf.WriteString(msg)
+	}
+
+	// Test 1. Check missing override rules
 	config := changeresponse.CreateConfig()
 
-	_, err := changeresponse.New(ctx, next, config, "test-plugin")
-	if err == nil || err.Error() != "at least one override rule is required" {
+	if _, err := changeresponse.New(ctx, next, config, "test-plugin"); err == nil || err.Error() != "at least one override rule is required" {
 		t.Log(err)
-		t.Error("Unexpected response when initializing new plugin")
+		t.Error("Unexpected response when initializing new plugin without rules")
+	}
+
+	// Test 2. No config
+	if _, err := changeresponse.New(ctx, next, nil, "test-plugin"); err == nil || err.Error() != "config must be defined" {
+		t.Log(err)
+		t.Error("Unexpected response when initializing new plugin without config")
+	}
+
+	// Test 3. Debug message with successful init
+	config = &changeresponse.Config{
+		Overrides: []changeresponse.Override{{
+			From: []int{200},
+			To:   200,
+		}},
+		Debug: true,
+	}
+
+	outBuf.Reset()
+	if _, err := changeresponse.New(ctx, next, config, "test-plugin"); err != nil {
+		t.Error("Unexpected error: " + err.Error())
+	}
+
+	if !strings.Contains(outBuf.String(), "defined config test-plugin:") {
+		t.Errorf(
+			"Unexpected notification\nactual: %s\nexpected: %s",
+			outBuf.String(),
+			"defined config test-plugin:",
+		)
 	}
 }

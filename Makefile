@@ -1,9 +1,10 @@
-.PHONY: lint test bench vendor clean setup
+.PHONY: lint test bench vendor clean setup cover cover_web
 
 export GO111MODULE=on
 
 APP_SKIP_GOIMPORTS ?= 0
 APP_SKIP_STATICCHECK ?= 0
+OUT_TESTS_COVER ?= ./coverprofile.out
 
 default: lint test
 
@@ -29,7 +30,7 @@ else
 endif
 
 test:
-	go test -v -cover ./...
+	go test -v -cover -race ./...
 
 bench:
 	go test -v -bench ./...
@@ -57,3 +58,12 @@ ifneq ($(APP_SKIP_PKG_UPDATE),1)
 	go get -u ./...
 endif
 
+# run test coverage
+cover: lint
+	go test -coverprofile $(OUT_TESTS_COVER) ./...
+	go tool cover -func $(OUT_TESTS_COVER)
+
+# run test coverage in HTML view
+cover_web: lint
+	go test -coverprofile $(OUT_TESTS_COVER) ./...
+	go tool cover -html $(OUT_TESTS_COVER)

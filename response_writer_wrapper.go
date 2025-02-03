@@ -15,7 +15,6 @@ type ResponseWriterWrapper struct {
 // WriteHeader Override WriteHeader to capture status code
 func (rw *ResponseWriterWrapper) WriteHeader(statusCode int) {
 	rw.status = statusCode
-	//rw.ResponseWriter.WriteHeader(statusCode)
 }
 
 func (rw *ResponseWriterWrapper) Write(data []byte) (int, error) {

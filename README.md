@@ -35,3 +35,6 @@ to 200, remove & set some headers in the response before returning it to the cli
       headers:
         X-Foo: [bar]   # set additional headers
 ```
+
+### TODOs
+- [ ] consider how better to handle `Transfer-Encoding: chunked` data and automatically fix issues with incorrect response processing. E.g. `Content-Length`

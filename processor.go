@@ -66,9 +66,6 @@ func changeResponse(wrapper *ResponseWriterWrapper, a *Plugin) {
 		}
 	}
 
-	// Remove chunked transfer encoding to avoid chunked responses which may lead to the broken response
-	//headers.Del("Transfer-Encoding")
-
 	// Set modified content length
 	headers.Set("Content-Length", strconv.Itoa(body.Len()))
 
