@@ -1,0 +1,17 @@
+displayName: Change Status Code Plugin
+type: middleware
+iconPath: .assets/icon.png
+
+import: github.com/bravepickle/traefik-change-response
+
+summary: 'Replace response with other based on response status codes'
+
+testData:
+  overrides:
+    - from: [500, 501, 502, 503]
+      to: 201
+      body: ""
+      mode: replace
+      removeHeaders: [Content-Encoding, Transfer-Encoding]
+      headers:
+        X-Overridden: [Yes]
